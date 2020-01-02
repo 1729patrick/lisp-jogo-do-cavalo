@@ -81,8 +81,19 @@
 (defun read-time-limit ()
     (progn
         (progn
-            (format t "   ~%------ENTER TIME FOR COMPUTER PLAY (1000 >= TIME [seconds] >= 5000)------")
+            (format t "   ~%------ENTER TIME FOR COMPUTER PLAY (1000 >= TIME [ms] >= 5000)------")
             (terpri)
+)
+        (read)
+)
+)
+
+
+(defun read-play ()
+    (progn
+        (progn
+            (format t "~%1---------------------ENTER MOVE---------------------")
+              (terpri)
 )
         (read)
 )
