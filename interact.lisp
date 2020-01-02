@@ -20,8 +20,8 @@
         (
             (mode (read-mode)))
             (cond
-              ((equal mode 'hc) (format t "hc") (format t (read-first-player)))
-              ((equal mode 'cc) (format t "cc"))
+              ((equal mode 'hc) (format t "hc") (format t (read-first-player)) (format t (read-time-limit)))
+              ((equal mode 'cc) (format t "cc") (format t (read-time-limit)))
               (t (format t "Invalid mode"))
 
             )
@@ -57,7 +57,7 @@
 (defun read-first-player ()
     (progn
         (progn
-            (format t "   ~%---------------------CHOOSE FIRST PLAYER----------------------------")
+            (format t "   ~%---------------------CHOOSE THE FIRST PLAYER----------------------------")
             (terpri)
             (format t "   ~%                 1 - Human                                 ")
             (format t "   ~%                 2 - Computer                              ")
@@ -74,5 +74,16 @@
                 (                    (eq answer 2) 'c)
 
 ))
+)
+)
+
+
+(defun read-time-limit ()
+    (progn
+        (progn
+            (format t "   ~%------ENTER TIME FOR COMPUTER PLAY (1000 >= TIME [seconds] >= 5000)------")
+            (terpri)
+)
+        (read)
 )
 )
