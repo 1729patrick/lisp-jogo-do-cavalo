@@ -3,7 +3,7 @@
   '(
     (0 1 2 3 4 -1 6 7 8 9)
     (10 11 12 13 14 15 16 17 18 19)
-    (20 21 22 23 24 25 26 27 28 29)
+    (NIL 21 -1 23 24 25 26 27 28 29)
     (30 31 32 33 34 35 36 37 38 39)
     (40 41 42 43 44 45 46 47 48 49)
     (50 51 52 53 54 55 56 57 58 59)
@@ -18,23 +18,6 @@
 "returns a positition converted into a line and column indexes"
 	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (parse-integer (remove (character (subseq position 0 1)) position)))
 )
-
-(let ((player -1))
-  (defun jogar (state time)
-    (negamax state time player)
-
-    (cond
-      ((equal player -1) (setf player -2))
-      (t (setf player -1))
-    )
-  )
-)
-
-(defun negamax (state time player)
-
-)
-
-
 
 (defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
   (let* (
@@ -118,6 +101,19 @@
     )
   )
 
+(defun value-node (line-index column-index board)
+  (let* (
+         (line (nth line-index board))
+         (value (nth column-index line))
+         )
+
+    (cond
+     ((or (null value) (< value 0)) nil)
+     (t (list value))
+     )
+    )
+  )
+
 (defun line-node (value board)
   (apply #'append
          (mapcar
@@ -146,3 +142,25 @@
    ( (eq line-index 0) (cons (replace-position column-index (nth line-index board) val) (cdr board)))
    ( (cons (car board) (replace-value (- line-index 1) column-index (cdr board) val))))
   )
+
+
+(defun generate-moves (line-index column-index board)
+(append
+        (move-avaliable (- line-index 2) (- column-index 1) board)
+        (move-avaliable (- line-index 2) (+ column-index 1) board)
+        (move-avaliable (+ line-index 2) (- column-index 1) board)
+        (move-avaliable (+ line-index 2) (+ column-index 1) board)
+        (move-avaliable (- line-index 1) (- column-index 2) board)
+        (move-avaliable (- line-index 1) (+ column-index 2) board)
+        (move-avaliable (+ line-index 1) (- column-index 2) board)
+        (move-avaliable (+ line-index 1) (+ column-index 2) board)
+        )
+)
+
+(defun move-avaliable (line-index column-index board)
+   (cond
+   ((or (< line-index 0) (> line-index 9)) nil)
+   ((or (< column-index 0) (> column-index 9)) nil)
+   (t (value-node line-index column-index board))
+   )
+)
