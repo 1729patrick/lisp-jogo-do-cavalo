@@ -19,7 +19,21 @@
 	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (parse-integer (remove (character (subseq position 0 1)) position)))
 )
 
-(defun max-min-asymmetric-value (board &optional (strategy 'max))
+(defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
+  (let* (
+         (simmetric (reverse (write-to-string value)))
+         )
+
+    (cond
+     ((null value) board)
+     ((< value 10) (remove-node (* value 10) board))
+     ((equal (parse-integer simmetric)  value) (remove-node (asymmetric-value board strategy) board))
+     (t (remove-node (parse-integer simmetric) board))
+     )
+    )
+  )
+
+(defun asymmetric-value (board &optional (strategy 'max))
   (let* (
          (min-max (asymmetric-values board))
          )
@@ -64,4 +78,54 @@
             )
           board)
          )
+  )
+
+(defun remove-node (value board)
+    (let* (
+           (line-column (position-node value board))
+           )
+
+      (cond ((or (null (first line-column)) (null (second line-column))) board)
+            (t (replace-value (first line-column) (second line-column) board))
+            )
+      )
+    )
+
+
+(defun position-node (value board)
+  (let* (
+         (line (line-node value board))
+         )
+
+    (list (position line board :test #'equal) (position value line :test #'equal))
+    )
+  )
+
+(defun line-node (value board)
+  (apply #'append
+         (mapcar
+          (lambda (lin)
+            (cond
+             ((position value lin :test #'equal) lin)
+             (T nil)
+             )
+            )
+          board
+       )
+    )
+  )
+
+(defun replace-position (column-index line &optional (val nil))
+  (cond
+   ( (null line) '())
+   ( (eq column-index 0) (cons val (cdr line)))
+   ( (cons (car line) (replace-position (- column-index 1) (cdr line) val))))
+  )
+
+
+(defun replace-value (line-index column-index board &optional (val nil))
+  (cond
+   ( (null board) '())
+   ( (eq line-index 0) (cons (replace-position column-index (nth line-index board) val) (cdr board)))
+   ( (cons (car board) (replace-value (- line-index 1) column-index (cdr board) val))))
   )
