@@ -1,7 +1,7 @@
 ;;board-order
 (defun bo()
   '(
-    (0 1 2 3 4 5 6 7 8 9)
+    (0 1 2 3 4 -1 6 7 8 9)
     (10 11 12 13 14 15 16 17 18 19)
     (20 21 22 23 24 25 26 27 28 29)
     (30 31 32 33 34 35 36 37 38 39)
@@ -10,7 +10,7 @@
     (60 61 62 63 64 65 66 67 68 69)
     (70 71 72 73 74 75 76 77 78 79)
     (80 81 82 83 84 85 86 87 88 89)
-    (90 91 92 93 94 95 96 97 98 99)
+    (90 91 92 93 94 95 96 -2 98 99)
     )
 )
 
@@ -18,6 +18,23 @@
 "returns a positition converted into a line and column indexes"
 	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (parse-integer (remove (character (subseq position 0 1)) position)))
 )
+
+(let ((player -1))
+  (defun jogar (state time)
+    (negamax state time player)
+
+    (cond
+      ((equal player -1) (setf player -2))
+      (t (setf player -1))
+    )
+  )
+)
+
+(defun negamax (state time player)
+
+)
+
+
 
 (defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
   (let* (
