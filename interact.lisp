@@ -20,7 +20,7 @@
         (
             (mode (read-mode)))
             (cond
-              ((equal mode 'hc) (format t "hc"))
+              ((equal mode 'hc) (format t "hc") (format t (read-first-player)))
               ((equal mode 'cc) (format t "cc"))
               (t (format t "Invalid mode"))
 
@@ -48,6 +48,30 @@
             (cond
                 (                    (eq answer 1) 'hc)
                 (                    (eq answer 2) 'cc)
+
+))
+)
+)
+
+
+(defun read-first-player ()
+    (progn
+        (progn
+            (format t "   ~%---------------------CHOOSE FIRST PLAYER----------------------------")
+            (terpri)
+            (format t "   ~%                 1 - Human                                 ")
+            (format t "   ~%                 2 - Computer                              ")
+            (terpri)
+            (format t "   ~% --------------------------------------------------------~%~%> ")
+)
+
+        (let
+            (
+                (answer
+                    (read)))
+            (cond
+                (                    (eq answer 1) 'h)
+                (                    (eq answer 2) 'c)
 
 ))
 )
