@@ -92,7 +92,7 @@
 (defun read-play ()
     (progn
         (progn
-            (format t "~%1---------------------ENTER MOVE---------------------")
+            (format t "~%1---------------------ENTER YOUR MOVE---------------------")
               (terpri)
 )
         (read)
@@ -116,5 +116,10 @@
   (terpri)
   (terpri)
   (display-board board)
+)
+
+(defun read-move ()
   (terpri)
+  (format t "Enter your move: ")
+  (read)
 )
