@@ -98,3 +98,23 @@
         (read)
 )
 )
+
+
+(defun display-board (board)
+    (cond
+        ((null board) '())
+        (t
+            (write-line (write-to-string (car board)))
+            (display-board (cdr board))
+        )
+    )
+)
+
+(defun display-computer-move (move board)
+  (terpri)
+  (format t "Computer move: ~a" move)
+  (terpri)
+  (terpri)
+  (display-board board)
+  (terpri)
+)
