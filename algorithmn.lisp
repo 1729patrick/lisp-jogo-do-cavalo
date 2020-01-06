@@ -1,6 +1,6 @@
 (let ((player -1))
   (defun jogar (board time)
-    (format t "~a" (negamax board player time 3 most-negative-fixnum most-positive-fixnum 1))
+    (format t "~a" (negamax board player time 1 most-negative-fixnum most-positive-fixnum 1))
 
     (setf player (opposite player))
   )
@@ -21,14 +21,7 @@
 ;; break
 ;; return bestValue OK
 
-
-(let (
-  (best-value most-negative-fixnum);;bestValue := −∞
-  )
-
-
 (defun negamax (board node time depth α β cor)
-  (format t "~a" (generate-moves board node))
   (cond
     ((= depth 0) (* node cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
 
@@ -37,21 +30,26 @@
       )
 
       (successors-loop successors board node time depth α β cor)
-
-     best-value
     )
    )
   )
 )
 
-(successors-loop (successors board node time depth α β cor) ;;para cada sucessor nk em sucessores
-(cond ((null successors) nil)
+(defun successors-loop (successors board node time depth α β cor &optional (best-value most-negative-fixnum)) ;;para cada sucessor nk em sucessores
+(cond (
+      (null successors) best-value)
       (t
-          (setf best-value (max best-value (- (negamax board successor time (- depth 1) (- α) (- β) (- cor))))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
-          (setf α (max α best-value)) ;; α := max (α, bestValue)
-          (successors-loop (cdr successors) board node time depth α β cor)
+        (let* (
+          (best-value (max best-value (- (negamax board (car successors) time (- depth 1) (- β) (- α) (- cor))))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
+          (α (max α best-value)) ;; α := max (α, bestValue))
+        )
+
+        (if (>= α β)
+        best-value
+        (successors-loop (cdr successors) board node time depth α β cor best-value))
+        )
       )
-      )
+    )
 )
 
 (defun opposite (player)
