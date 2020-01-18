@@ -19,6 +19,11 @@
 	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (parse-integer (remove (character (subseq position 0 1)) position)))
 )
 
+;;(position-indexes-to-chess (position-node 28 (bo)))
+(defun position-indexes-to-chess (position)
+	(concatenate 'string (string (code-char (+ 65 (second position)))) (write-to-string (+ 1 (first position))))
+)
+
 (defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
   (let* (
          (simmetric (reverse (write-to-string value)))
