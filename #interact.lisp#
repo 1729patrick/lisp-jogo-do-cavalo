@@ -97,7 +97,7 @@
 )
         (read)
 )
-) 
+)
 
 
 (defun display-board (board)
@@ -110,9 +110,9 @@
     )
 )
 
-(defun display-computer-move (move board)
+(defun display-computer-move (computer move board)
   (terpri)
-  (format t "Computer move: ~a" move)
+  (format t "Computer ~a move: ~a" computer move)
   (terpri)
   (terpri)
   (display-board board)

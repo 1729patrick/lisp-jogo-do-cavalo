@@ -1,8 +1,37 @@
-(let ((player -1))
+(let (
+  (*player nil)
+  (*board (bo))
+)
   (defun jogar (board time)
-    (format t "~a" (negamax board player time 1 most-negative-fixnum most-positive-fixnum 1))
+  (let* (
+    (move (negamax board *player time 1 most-negative-fixnum most-positive-fixnum 1))
+    (indexes-move (position-node move board))
+    (indexes-player (position-node *player board))
+    (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
+    (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
+    )
 
-    (setf player (opposite player))
+  (cond
+    ((not (null board-with-updated-player-position))
+      (display-computer-move *player (position-indexes-to-chess indexes-move) board-with-updated-player-position)
+
+        board-with-updated-player-position
+    )
+    (t *board)
+     )
+    )
+  )
+
+
+  (defun game (time &optional (first-player -1))
+  (setf *player first-player)
+
+  (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))))
+    do
+
+    (setf *board (jogar *board time))
+    (setf *player (opposite *player))
+  )
   )
 )
 
