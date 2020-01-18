@@ -20,8 +20,8 @@
         (
             (mode (read-mode)))
             (cond
-              ((equal mode 'hc) (game (read-time-limit) (read-first-player)))
-              ((equal mode 'cc) (game (read-time-limit) nil))
+              ((equal mode 'hc) (game-hc (read-time-limit) (read-first-player)))
+              ((equal mode 'cc) (game-cc (read-time-limit)))
               (t (format t "Invalid mode"))
 
             )
@@ -90,14 +90,10 @@
 
 
 ;;J5
-(defun read-play ()
-    (progn
-        (progn
-            (format t "~%1---------------------ENTER YOUR MOVE---------------------")
-              (terpri)
-)
-        (read)
-)
+(defun read-play (moves-available)
+    (terpri)
+    (format t "Enter your move ~a: " moves-available)
+    (read)
 )
 
 
