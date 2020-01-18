@@ -102,7 +102,6 @@
          (line (line-node value board))
          )
 
-    (terpri)
     (list (position line board :test #'equal) (position value line :test #'equal))
     )
   )
