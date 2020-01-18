@@ -1,6 +1,8 @@
 (let (
   (*player nil)
   (*board (bo))
+  (*points-1 0)
+  (*points-2 0)
 )
   (defun jogar (board time)
   (let* (
@@ -15,7 +17,10 @@
     ((not (null board-with-updated-player-position))
       (display-computer-move *player (position-indexes-to-chess indexes-move) board-with-updated-player-position)
 
-        board-with-updated-player-position
+      (sum-points move)
+
+      board-with-updated-player-position
+
     )
     (t *board)
      )
@@ -25,6 +30,10 @@
 
   (defun game (time &optional (first-player -1))
   (setf *player first-player)
+  ;;resetar as váriaveis apos cada partida
+  (setf *board (bo))
+  (setf *points-1 0)
+  (setf *points-2 0)
 
   (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))))
     do
@@ -32,6 +41,18 @@
     (setf *board (jogar *board time))
     (setf *player (opposite *player))
   )
+
+  (format t "Total points player -1: ~a" *points-1)
+  (terpri)
+  (format t "Total points player -2: ~a" *points-2)
+  )
+
+  (defun sum-points (move)
+    (format t "~a" move)
+    (cond
+      ((eq *player -1) (setf *points-1 (+ *points-1 move)))
+      (t (setf *points-2 (+ *points-2 move)))
+    )
   )
 )
 
