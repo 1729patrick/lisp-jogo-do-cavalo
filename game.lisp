@@ -211,3 +211,7 @@
   )
 )
 
+(defun get-play-time-milisecs(start-time)
+  "gets the time of a made play"
+    (- (get-internal-real-time) start-time)
+)

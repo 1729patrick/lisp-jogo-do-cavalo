@@ -8,9 +8,9 @@
 
 (progn
     (load
-        (asset-path "algorithmn.lisp"))
+        (asset-path "game.lisp"))
     (load
-        (asset-path "game.lisp")))
+        (asset-path "algorithmn.lisp")))
 
 
 
@@ -161,3 +161,38 @@
 (terpri)
 (terpri)
 )
+
+(defun statistics-file-path()
+  "gets the path for of the log file"
+  (asset-path "log.dat")
+  )
+
+  (defun write-log (board points-1 points-2 play-time num-analized-nodes)
+  "Writes the play log, along with -- o número de nós analisados, o número de cortes efetuados (de cada tipo), o tempo gasto
+em cada jogada e o tabuleiro atual."
+
+    (with-open-file (file (statistics-file-path) :direction :output :if-exists :append :if-does-not-exist :create)
+           (progn 
+             (terpri)
+                (format file "~%~t------------:PLAY MADE------------")
+             (terpri)
+                (format file "~%~t----:  Playing Time: ~a Miliseconds" play-time)
+             (terpri)
+                (format file "~%~t----:  Points Player-1: ~a" points-1)
+             (terpri)
+                (format file "~%~t----:  Points Player-2: ~a" points-2)
+  
+             (terpri)
+             (terpri)
+                (format file "~%~t----:  Current Board:")
+             (terpri)
+                (print-board board file)
+             )
+    )
+  )
+
+  (defun print-board(board &optional (file-stream t))
+  "lista a board"
+  (not (null (mapcar #'(lambda(line) 
+        (format file-stream "~%~t~t ~a" line)) board)))
+  )
