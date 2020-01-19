@@ -1,5 +1,5 @@
 (let (
-  (*player nil)
+  (*player -1)
   (*board (bo))
   (*points-1 0)
   (*points-2 0)
@@ -12,6 +12,14 @@
       (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
+
+    (cond
+      ((and (null (first indexes-player)) (null (second indexes-player)))
+        (setf move (max-first-move-value *player *board))
+        (setf indexes-move (position-node move board))
+        (setf board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) *board *player))
+      )
+    )
 
     (cond
       ((not (null board-with-updated-player-position))
@@ -31,25 +39,32 @@
 ;;(human-play "I3")
 (defun human-play (position)
     (let* (
-      (move (car (value-node (first (position-chess-to-indexes (string position))) (second (position-chess-to-indexes (string position))) *board)))
+      (move (car (value-node (first (position-chess-to-indexes position)) (second (position-chess-to-indexes position)) *board)))
       (indexes-move (position-node move *board))
       (indexes-player (position-node *player *board))
       (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) *board nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
 
+      (cond
+      ((and (null (first indexes-player)) (null (second indexes-player)))
+        (setf indexes-move (position-node move *board))
+        (setf board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) *board *player))
+      )
+    )
+
+      (sum-points move)
       board-with-updated-player-position
       )
   )
 
 
   (defun game-cc (time)
-    ;;resetar as váriaveis apos cada partida
-    (setf *board (bo))
-    (setf *points-1 0)
-    (setf *points-2 0)
+    (reset-variables)
 
-    (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))))
+    (display-start-board *board)
+
+    (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))) (equal 100 (length (remove-nil-value *board))))
       do
 
       (setf *board (jogar *board time))
@@ -61,30 +76,26 @@
 
   ;;human = -1
   ;;computer = -2
-
   (defun game-hc (time &optional (first-player -1))
-    (setf *player first-player)
-    ;;resetar as váriaveis apos cada partida
-    (setf *board (bo))
-    (setf *points-1 0)
-    (setf *points-2 0)
+    (reset-variables)
 
-    (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))))
+    (setf *player first-player)
+    (display-start-board *board)
+
+    (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))) (equal 100 (length (remove-nil-value *board))))
       do
 
       (cond
         ((equal *player -1)
             (let* (
               (moves (generate-moves *board *player))
-              (moves-avaliable (mapcar
-                                  (lambda (value)
-                                      (position-indexes-to-chess (position-node value *board)))
-                                moves)
-              )
+              (moves-avaliable (values-to-chess moves *board))
             )
 
-
-            (setf *board (human-play (read-play moves-avaliable)))
+            (cond
+            ((null moves-avaliable) (setf *board (human-play (read-play (values-to-chess (car *board) *board)))))
+            (t (setf *board (human-play (read-play moves-avaliable))))
+            )
           )
 
           (terpri)
@@ -104,6 +115,14 @@
       ((eq *player -1) (setf *points-1 (+ *points-1 move)))
       (t (setf *points-2 (+ *points-2 move)))
     )
+  )
+
+   ;;resetar as váriaveis apos cada partida
+  (defun reset-variables ()
+    (setf *board (bo))
+    (setf *player -1)
+    (setf *points-1 0)
+    (setf *points-2 0)
   )
 )
 

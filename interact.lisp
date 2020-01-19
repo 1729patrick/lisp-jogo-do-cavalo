@@ -70,8 +70,8 @@
                 (answer
                     (read)))
             (cond
-                (                    (eq answer 1) 'h)
-                (                    (eq answer 2) 'c)
+                (                    (eq answer 1) -1)
+                (                    (eq answer 2) -2)
 
 ))
 )
@@ -93,7 +93,20 @@
 (defun read-play (moves-available)
     (terpri)
     (format t "Enter your move ~a: " moves-available)
-    (read)
+
+    (let (
+        (play (write-to-string (read)))
+       )
+
+    (cond
+      ((null (position play moves-available :test #'equal))
+        (format t "Invalid move :(")
+        (terpri)
+        (read-play moves-available)
+      )
+      (t play)
+     )
+    )
 )
 
 
@@ -106,6 +119,18 @@
         )
     )
 )
+
+;; (defun add-zero-left (line)
+;; (mapcar
+;;       (lambda (value)
+;;           (cond
+;;             ((or (null value) (> value 0)) value)
+;;             ((< value 10) (concatenate 'string "0" (write-to-string value)))
+;;             (t (write-to-string value))
+;;           )
+;;       )
+;;     line)
+;; )
 
 (defun display-computer-move (computer move board)
   (terpri)
@@ -121,4 +146,18 @@
   (format t "Total points player -1: ~a" points-player-1)
   (terpri)
   (format t "Total points player -2: ~a" points-player-2)
+)
+
+
+(defun display-start-board (board)
+(terpri)
+(terpri)
+(format t "----------------------START BOARD-----------------")
+(terpri)
+(terpri)
+(display-board board)
+(terpri)
+(format t "----------------------START BOARD-----------------")
+(terpri)
+(terpri)
 )

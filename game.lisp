@@ -1,7 +1,7 @@
 ;;board-order
 (defun bo()
   '(
-    (0 1 2 3 4 -1 6 7 8 9)
+    (00 01 02 03 04 05 06 07 08 09)
     (10 11 12 13 14 15 16 17 18 19)
     (20 21 22 23 24 25 26 27 28 29)
     (30 31 32 33 34 35 36 37 38 39)
@@ -10,19 +10,26 @@
     (60 61 62 63 64 65 66 67 68 69)
     (70 71 72 73 74 75 76 77 78 79)
     (80 81 82 83 84 85 86 87 88 89)
-    (90 91 92 93 94 95 96 -2 98 99)
+    (90 91 92 93 94 95 96 97 98 99)
     )
 )
 
 ;;(position-chess-to-indexes "I3")
 (defun position-chess-to-indexes (position)
 "returns a positition converted into a line and column indexes"
-	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (parse-integer (remove (character (subseq position 0 1)) position)))
+	(list (- (char-code (character (string-upcase (subseq position 0 1)))) 65) (1- (parse-integer (remove (character (subseq position 0 1)) position))))
 )
 
 ;;(position-indexes-to-chess (position-node 28 (bo)))
 (defun position-indexes-to-chess (position)
-	(concatenate 'string (string (code-char (+ 65 (second position)))) (write-to-string (+ 1 (first position))))
+	(concatenate 'string (string (code-char (+ 65 (first position)))) (write-to-string (+ 1 (second position))))
+)
+
+(defun values-to-chess (values board)
+(mapcar
+      (lambda (value)
+          (position-indexes-to-chess (position-node value board)))
+    values)
 )
 
 (defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
@@ -181,3 +188,26 @@
    (t (value-node line-index column-index board))
    )
 )
+
+(defun max-first-move-value (player board)
+  (let* (
+      (line (if (equal -1 player) (first (bo)) (tenth (bo))))
+      (max-value  (apply 'max line))
+  )
+
+    max-value
+  )
+)
+
+
+(defun max-first-o-value (player board)
+  (let* (
+      (line (if (equal -1 player) (first (bo)) (tenth (bo))))
+      (max-value  (apply 'max line))
+      (indexes (position-node max-value board))
+  )
+
+    (replace-value (first indexes) (second indexes) board player)
+  )
+)
+
