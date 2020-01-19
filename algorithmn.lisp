@@ -99,7 +99,9 @@
             )
 
             (cond
-            ((null moves-avaliable) (setf *board (human-play (read-play (values-to-chess (car *board) *board)))))
+            ((null moves-avaliable) 
+            ;;adicionar tempo da jogada do humano?????
+              (setf *board (human-play (read-play (values-to-chess (car *board) *board)))))
             (t (setf *board (human-play (read-play moves-avaliable))))
             )
           )
@@ -150,7 +152,7 @@
 (defun negamax (board node time-limit depth α β cor &optional (play-start-time (get-internal-real-time)))
   (cond
       ;;((>= (- (get-internal-real-time) play-start-time) time-limit) nil)
-      ((= depth 0) (* node cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
+      ((or (= depth 0) (>= (- (get-internal-real-time) play-start-time) time-limit))  (* node cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
 
     (t (let* (
       (successors (generate-moves board node));;sucessores := OrderMoves(GenerateMoves(n))
