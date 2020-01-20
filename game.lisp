@@ -1,7 +1,7 @@
 ;;board-order
 (defun bo()
   '(
-    (00 01 02 03 04 05 06 07 08 09)
+    (00 01 02 03 04 -1 06 07 08 09)
     (10 11 12 13 14 15 16 17 18 19)
     (20 21 22 23 24 25 26 27 28 29)
     (30 31 32 33 34 35 36 37 38 39)
@@ -10,7 +10,7 @@
     (60 61 62 63 64 65 66 67 68 69)
     (70 71 72 73 74 75 76 77 78 79)
     (80 81 82 83 84 85 86 87 88 89)
-    (90 91 92 93 94 95 96 97 98 99)
+    (90 91 92 93 94 95 -2 97 98 99)
     )
 )
 
@@ -158,7 +158,7 @@
   )
 
 
-(defun generate-moves (board player)
+(defun generate-moves (board player points-1 points-2)
 (let* (
       (line-column (position-node player board))
       (line-index (first line-column))
@@ -168,24 +168,40 @@
 
       (cond ((null board-no-player) '())
       (t (append
-        (move-avaliable (- line-index 2) (- column-index 1) board-no-player player)
-        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player player)
-        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player player)
-        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player player)
-        (move-avaliable (- line-index 1) (- column-index 2) board-no-player player)
-        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player player)
-        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player player)
-        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player player)
+        (move-avaliable (- line-index 2) (- column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 1) (- column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
         ))
       )
   )
 )
 
-(defun move-avaliable (line-index column-index board player)
+(defun move-avaliable (line-index column-index board player points-1 points-2)
    (cond
    ((or (< line-index 0) (> line-index 9)) nil)
    ((or (< column-index 0) (> column-index 9)) nil)
-   (t (value-node line-index column-index board))
+   ((value-node line-index column-index board)
+
+  ;;mudar para construtores
+
+	(let* (
+			(value (car (value-node line-index column-index board)))
+			(points (sum-move player value points-1 points-2))
+			)
+   (list
+     (list
+		 	value
+			(first points) ;;player -1
+			(second points)	 ;;player -2
+      (replace-value line-index column-index board player))
+     )
+		)
+    )
    )
 )
 
@@ -214,4 +230,11 @@
 (defun get-play-time-milisecs(start-time)
   "gets the time of a made play"
     (- (get-internal-real-time) start-time)
+)
+
+(defun sum-move (player points points-1 points-2)
+  (cond
+    ((equal player -1) (list (+ points points-1) points-2))
+    (t (list points-1 (+ points points-2)))
+  )
 )
