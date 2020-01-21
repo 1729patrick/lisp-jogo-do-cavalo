@@ -14,6 +14,43 @@
     )
 )
 
+;;<node>= current-points, points-of-player1, points-of-player2, <state>
+;;;<state>= current-board
+(defun make-node(points p-p1 p-p2 board)
+  (list points p-p1 p-p2 board)
+)
+
+(defun node-points(node)
+  (first node)
+)
+
+(defun node-points-p1(node)
+  (second node)
+)
+
+(defun node-points-p2(node)
+  (third node)
+)
+
+(defun node-board(node)
+  (fourth node)
+)
+
+(defun test-node ()
+  (car (generate-moves (bo) -2 10 10))
+)
+;;Node value heuristic
+(defun evaluate-node(node)
+ "returns the value of the node between -1 and 1, knowing that the total points in the board are 4950"
+  (let ((point-variation (- (node-points-p1 node) (node-points-p2 node))))
+    (cond
+      ((> point-variation 2475) 1)
+      ((< point-variation -2475) -1)
+      ((equal point-variation 0) 0)
+      (t (float (/ point-variation 2475)))
+    ))
+)
+
 ;;(position-chess-to-indexes "I3")
 (defun position-chess-to-indexes (position)
 "returns a positition converted into a line and column indexes"
