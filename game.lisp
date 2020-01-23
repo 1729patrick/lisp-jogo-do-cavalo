@@ -52,6 +52,33 @@
     ))
 )
 
+(defun best-play-value(*best-play)
+  (first *best-play)
+)
+
+(defun best-play-points(*best-play)
+  (second *best-play)
+)
+
+(defun best-play-board(*best-play)
+  (third *best-play)
+)
+
+;;bestplay= heuristic-value position-value board
+(defun set-best-value(*best-play value)
+  (list value (best-play-points *best-play) (best-play-board *best-play))
+)
+
+
+(defun set-best-points(*best-play points)
+  (list (best-play-value *best-play) points (best-play-board *best-play))
+)
+
+(defun set-best-board(*best-play board)
+  (list (best-play-value *best-play) (best-play-points *best-play) board)
+)
+
+
 ;;(position-chess-to-indexes "I3")
 (defun position-chess-to-indexes (position)
 "returns a positition converted into a line and column indexes"

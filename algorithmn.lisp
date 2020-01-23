@@ -7,8 +7,11 @@
   (*board (bo))
   (*points-1 0)
   (*points-2 0)
-  (*best-value most-negative-fixnum)
+  ;;bestplay= heuristic-value position-value board
+  (*best-play '(most-negative-fixnum -999 nil))
 )
+
+
   (defun jogar (board time)
     (let* (
       (play-start-time (get-internal-real-time));;start-time in miliseconds
@@ -130,7 +133,7 @@
     (setf *player -1)
     (setf *points-1 0)
     (setf *points-2 0)
-    (setf *best-value most-negative-fixnum)
+    (setf *best-play '(most-negative-fixnum 0 0))
   )
 
 
@@ -157,25 +160,38 @@
     (t (let* (
       (successors (generate-moves (node-board node) *player (node-points-p1 node) (node-points-p2 node)));;sucessores := OrderMoves(GenerateMoves(n))
       )
-
+      
       (successors-loop successors node time-limit depth α β cor play-start-time)
     )
    )
   )
 )
 
-(defun successors-loop (successors node time depth α β cor play-start-time &optional) ;;para cada sucessor nk em sucessores
+(defun successors-loop (successors node time depth α β cor play-start-time) ;;para cada sucessor nk em sucessores
 (cond (
-      (null successors) best-value*)
+      (null successors) (best-play-points *best-play))
       (t
+
+ (let*
+ (
+  (best-n (max  (best-play-points *best-play) (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time))))
+ )
+
+     (cond 
+    
+      ((> best-n  (best-play-points *best-play)  )   (setf *best-play (set-best-points *best-play best-n)))
+    )
+            ;;(format t "best-value: ~a"  (best-play-points ))
+ )
+   
         (let* (
-          (setf best-value* (max best-value* (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
-          (α (max α best-value*)) ;; α := max (α, bestValue))
+          ;; (best-value ) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
+          (α (max α (best-play-points *best-play))) ;; α := max (α, bestValue))
         )
 
         (if (>= α β)
-        best-value*
-        (successors-loop (cdr successors) node time depth α β cor play-start-time best-value*))
+        (best-play-points *best-play) ;;corte
+        (successors-loop (cdr successors) node time depth α β cor play-start-time))
         )
       )
     )
