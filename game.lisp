@@ -39,6 +39,7 @@
 (defun test-node ()
   (car (generate-moves (bo) -2 10 10))
 )
+
 ;;Node value heuristic
 (defun evaluate-node(node)
  "returns the value of the node between -1 and 1, knowing that the total points in the board are 4950"
@@ -47,7 +48,7 @@
       ((> point-variation 2475) 1)
       ((< point-variation -2475) -1)
       ((equal point-variation 0) 0)
-      (t (float (/ point-variation 2475)))
+      (t (float (/ point-variation 4950)))
     ))
 )
 
