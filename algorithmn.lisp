@@ -8,16 +8,17 @@
   (*points-1 0)
   (*points-2 0)
 )
-  (defun jogar (board time)
+  (defun jogar (board time depth)
     (let* (
       (play-start-time (get-internal-real-time));;start-time in miliseconds
-      (move (negamax board *player time 1 most-negative-fixnum most-positive-fixnum 1 play-start-time))
+      (move (negamax (make-node -5 *points-1 *points-2 board -5 *player) time depth most-negative-fixnum most-positive-fixnum 1 play-start-time))
       (indexes-move (position-node move board))
       (indexes-player (position-node *player board))
       (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
 
+    (format t "THE MOVE IS: ~a" move)
     (cond
       ((and (null (first indexes-player)) (null (second indexes-player)))
         (setf move (max-first-move-value *player *board))
@@ -65,15 +66,16 @@
   )
 
 
-  (defun game-cc (time)
+  (defun game-cc (time depth)
     (reset-variables)
 
     (display-start-board *board)
-    (let ()  )
-    (loop while (or (not (null (generate-moves *board *player))) (not (null (generate-moves *board (opposite *player)))) (equal 100 (length (remove-nil-value *board))))
+    (loop while (or (not (null (generate-moves *board *player *points-1 *points-2))) 
+      (not (null (generate-moves *board (opposite *player) *points-1 *points-2))) 
+        (equal 100 (length (remove-nil-value *board))))
       do
 
-      (setf *board (jogar *board time))
+      (setf *board (jogar *board time depth))
       (setf *player (opposite *player))
     )
 
@@ -82,7 +84,7 @@
 
   ;;human = -1
   ;;computer = -2
-  (defun game-hc (time &optional (first-player -1))
+  (defun game-hc (time depth &optional (first-player -1))
     (reset-variables)
 
     (setf *player first-player)
@@ -109,7 +111,7 @@
           (terpri)
           (display-board *board)
         )
-        (t (setf *board (jogar *board time)))
+        (t (setf *board (jogar *board time depth)))
       )
 
       (setf *player (opposite *player))
@@ -132,7 +134,7 @@
     (setf *points-1 0)
     (setf *points-2 0)
   )
-)
+
 
 ;;; argumentos: nó n, profundidade d, cor c
 ;;; b = ramificação (número de sucessores)
@@ -148,34 +150,34 @@
 ;; se α ≥ β
 ;; break
 ;; return bestValue OK
-
-(defun negamax (board node time-limit depth α β cor &optional (play-start-time (get-internal-real-time)))
+;;;node = player
+(defun negamax (node time-limit depth α β cor &optional (play-start-time (get-internal-real-time)))
   (cond
       ;;((>= (- (get-internal-real-time) play-start-time) time-limit) nil)
-      ((or (= depth 0) (>= (- (get-internal-real-time) play-start-time) time-limit))  (* node cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
+      ((or (= depth 0) (>= (- (get-internal-real-time) play-start-time) time-limit))  (* (node-points node) cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
 
     (t (let* (
-      (successors (generate-moves board node));;sucessores := OrderMoves(GenerateMoves(n))
+        (successors (generate-moves (node-board node) (node-player node) (node-points-p1 node) (node-points-p1 node)));;sucessores := OrderMoves(GenerateMoves(n))
       )
 
-      (successors-loop successors board node time-limit depth α β cor play-start-time)
+      (successors-loop successors (node-board node) (node-player node) time-limit depth α β cor play-start-time)
     )
    )
   )
 )
 
-(defun successors-loop (successors board node time depth α β cor play-start-time &optional (best-value most-negative-fixnum)) ;;para cada sucessor nk em sucessores
+(defun successors-loop (successors board player time depth α β cor play-start-time &optional (best-value most-negative-fixnum)) ;;para cada sucessor nk em sucessores
 (cond (
       (null successors) best-value)
       (t
         (let* (
-          (best-value (max best-value (- (negamax board (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
+          (best-value (max best-value (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
           (α (max α best-value)) ;; α := max (α, bestValue))
         )
 
         (if (>= α β)
         best-value
-        (successors-loop (cdr successors) board node time depth α β cor play-start-time best-value))
+        (successors-loop (cdr successors) board player time depth α β cor play-start-time best-value))
         )
       )
     )
@@ -186,4 +188,6 @@
       ((equal player -1) -2)
       (t -1)
     )
+)
+
 )

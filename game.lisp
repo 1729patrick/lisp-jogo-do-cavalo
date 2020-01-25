@@ -14,6 +14,100 @@
     )
 )
 
+(defun bo-2()
+  '(
+    (00 01 02 03 04 05 06 07 08 09)
+    (10 11 -1 13 14 15 16 17 18 19)
+    (20 21 22 23 24 25 26 27 28 29)
+    (30 31 32 33 34 35 36 37 38 39)
+    (40 41 42 43 44 45 46 -2 48 49)
+    (50 51 52 53 54 55 56 57 58 59)
+    (60 61 62 63 64 65 66 67 68 69)
+    (70 71 72 73 74 75 76 77 78 79)
+    (80 81 82 83 84 85 86 87 88 89)
+    (90 91 92 93 94 95 96 97 98 99)
+    )
+)
+
+;;<node>= current-points, points-of-player1, points-of-player2, <state>
+;;;<state>= current-board
+(defun make-node(points p-p1 p-p2 board f player)
+  (list points p-p1 p-p2 board f player)
+)
+
+
+(defun node-points(node)
+  (first node)
+)
+
+(defun node-points-p1(node)
+  (second node)
+)
+
+(defun node-points-p2(node)
+  (third node)
+)
+
+(defun node-board(node)
+  (fourth node)
+)
+
+(defun node-f(node)
+  (fifth node)
+)
+
+(defun node-player(node)
+  (sixth node)
+)
+
+
+;;Node value heuristic
+(defun evaluate-node(points-p1 points-p2 player)
+ "returns the value of the node between -1 and 1, knowing that the total points in the board are 4950"
+  (let (
+    
+    (point-variation (- points-p1 points-p2))   
+    )
+    (cond ((equal player -2) (setf point-variation (- points-p2 points-p1))))
+    (cond
+      ((> point-variation 2475) 1)
+      ((< point-variation -2475) -1)
+      ((equal point-variation 0) 0)
+      (t   (round-to (float (/ point-variation 4950)) 5))
+    ))
+)
+
+(defun round-to (number precision &optional (what #'round))
+    (let ((div (expt 10 precision)))
+         (float (/ (funcall what (* number div)) div))))
+
+(defun best-play-value(*best-play)
+  (first *best-play)
+)
+
+(defun best-play-points(*best-play)
+  (second *best-play)
+)
+
+(defun best-play-board(*best-play)
+  (third *best-play)
+)
+
+;;bestplay= heuristic-value position-value board
+(defun set-best-value(*best-play value)
+  (list value (best-play-points *best-play) (best-play-board *best-play))
+)
+
+
+(defun set-best-points(*best-play points)
+  (list (best-play-value *best-play) points (best-play-board *best-play))
+)
+
+(defun set-best-board(*best-play board)
+  (list (best-play-value *best-play) (best-play-points *best-play) board)
+)
+
+
 ;;(position-chess-to-indexes "I3")
 (defun position-chess-to-indexes (position)
 "returns a positition converted into a line and column indexes"
@@ -158,7 +252,7 @@
   )
 
 
-(defun generate-moves (board player)
+"""(defun generate-moves (board player)
 (let* (
       (line-column (position-node player board))
       (line-index (first line-column))
@@ -179,15 +273,60 @@
         ))
       )
   )
+)"""
+
+(defun generate-moves (board player points-1 points-2)
+(let* (
+      (line-column (position-node player board))
+      (line-index (first line-column))
+      (column-index (second line-column))
+      (board-no-player (replace-value line-index column-index board nil))
+      )
+
+      (cond ((null board-no-player) '())
+      (t (append
+        (move-avaliable (- line-index 2) (- column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 1) (- column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
+        ))
+      )
+  )
 )
 
-(defun move-avaliable (line-index column-index board player)
+
+
+(defun move-avaliable (line-index column-index board player points-1 points-2)
    (cond
    ((or (< line-index 0) (> line-index 9)) nil)
    ((or (< column-index 0) (> column-index 9)) nil)
-   (t (value-node line-index column-index board))
+   ((value-node line-index column-index board)
+
+  ;;mudar para construtores
+
+	(let* (
+			(value (car (value-node line-index column-index board)))
+			(points (sum-move player value points-1 points-2))
+			)
+   (list
+       (make-node value (first points) (second points) (replace-value line-index column-index board player) (evaluate-node (first points) (second points) player) player)
+     )
+		)
+    )
    )
 )
+
+(defun sum-move (player points points-1 points-2)
+  (cond
+    ((equal player -1) (list (+ points points-1) points-2))
+    (t (list points-1 (+ points points-2)))
+  )
+)
+
 
 (defun max-first-move-value (player board)
   (let* (
@@ -214,4 +353,8 @@
 (defun get-play-time-milisecs(start-time)
   "gets the time of a made play"
     (- (get-internal-real-time) start-time)
+)
+
+(defun test-node ()
+  (car (generate-moves (bo-2) -2 12 47))
 )

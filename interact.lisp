@@ -18,10 +18,12 @@
     ()
     (let
         (
-            (mode (read-mode)))
+            (mode (read-mode))
+            (depth (read-depth))
+            )
             (cond
-              ((equal mode 'hc) (game-hc (read-time-limit) (read-first-player)))
-              ((equal mode 'cc) (game-cc (read-time-limit)))
+              ((equal mode 'hc) (game-hc (read-time-limit) (read-first-player) depth))
+              ((equal mode 'cc) (game-cc (read-time-limit) depth))
               (t (format t "Invalid mode"))
 
             )
@@ -88,6 +90,15 @@
 )
 )
 
+(defun read-depth ()
+    (progn
+        (progn
+            (format t "   ~%------ENTER THE MAXIMUM DEPTH------")
+            (terpri)
+)
+        (read)
+)
+)
 
 ;;J5
 (defun read-play (moves-available)
