@@ -7,16 +7,24 @@
   (*board (bo))
   (*points-1 0)
   (*points-2 0)
+  (*best-play -100)
 )
   (defun jogar (board time depth)
     (let* (
       (play-start-time (get-internal-real-time));;start-time in miliseconds
-      (move (negamax (make-node -5 *points-1 *points-2 board -5 *player) time depth most-negative-fixnum most-positive-fixnum 1 play-start-time))
+      (move (negamax (make-node -5 *points-1 *points-2 *board -5 *player) time depth most-negative-fixnum most-positive-fixnum 1 play-start-time))
       (indexes-move (position-node move board))
       (indexes-player (position-node *player board))
       (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
+  (terpri)
+  (format t "THE BOARD is:")
+  (terpri)
+      (display-board *board)
+  (terpri)
+   (format t "------------------")
+  (terpri)
 
     (format t "THE MOVE IS: ~a" move)
     (cond
@@ -176,8 +184,9 @@
         )
 
         (if (>= α β)
+        (successors-loop (cdr successors) board player time depth α β cor play-start-time best-value)
         best-value
-        (successors-loop (cdr successors) board player time depth α β cor play-start-time best-value))
+        )
         )
       )
     )

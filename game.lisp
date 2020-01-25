@@ -29,6 +29,21 @@
     )
 )
 
+(defun error-board ()
+
+'(
+  (0 NIL NIL NIL NIL NIL NIL NIL NIL NIL)
+  (NIL NIL NIL NIL 14 NIL 16 NIL 18 NIL)
+  (NIL -1 NIL NIL NIL 25 NIL 27 28 29)
+  (30 NIL 32 NIL 34 NIL 36 NIL 38 39)
+  (NIL NIL NIL 43 NIL 45 NIL 47 NIL 49)
+  (NIL NIL NIL NIL 54 NIL 56 NIL 58 -2)
+  (60 61 NIL 63 NIL 65 NIL 67 68 69)
+  (70 71 72 NIL 74 NIL 76 77 78 79)
+  (NIL 81 NIL 83 84 85 86 87 88 89)
+  (90 91 92 93 94 95 96 97 98 NIL)
+)
+)
 ;;<node>= current-points, points-of-player1, points-of-player2, <state>
 ;;;<state>= current-board
 (defun make-node(points p-p1 p-p2 board f player)
