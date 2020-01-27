@@ -22,7 +22,7 @@
             (depth (read-depth))
             )
             (cond
-              ((equal mode 'hc) (game-hc (read-time-limit) (read-first-player) depth))
+              ((equal mode 'hc) (game-hc (read-time-limit) depth (read-first-player) ))
               ((equal mode 'cc) (game-cc (read-time-limit) depth))
               (t (format t "Invalid mode"))
 
@@ -178,7 +178,7 @@
   (asset-path "log.dat")
   )
 
-  (defun write-log (board points-1 points-2 play-time num-analized-nodes)
+  (defun write-log (board points-1 points-2 play-time alpha-cuts beta-cuts num-analized-nodes)
   "Writes the play log, along with -- o número de nós analisados, o número de cortes efetuados (de cada tipo), o tempo gasto
 em cada jogada e o tabuleiro atual."
 
@@ -192,7 +192,13 @@ em cada jogada e o tabuleiro atual."
                 (format file "~%~t----:  Points Player-1: ~a" points-1)
              (terpri)
                 (format file "~%~t----:  Points Player-2: ~a" points-2)
-  
+            (terpri)
+                (format file "~%~t----:  Alpha Cuts: ~a" alpha-cuts)
+            (terpri)
+                (format file "~%~t----:  Beta Cuts: ~a" beta-cuts)
+            (terpri)
+                (format file "~%~t----:  Number of Analized Nodes: ~a" num-analized-nodes)
+
              (terpri)
              (terpri)
                 (format file "~%~t----:  Current Board:")

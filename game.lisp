@@ -44,10 +44,10 @@
   (90 91 92 93 94 95 96 97 98 NIL)
 )
 )
-;;<node>= current-points, points-of-player1, points-of-player2, <state>
+;;<node>= current-points, points-of-player1, points-of-player2, <state> f player
 ;;;<state>= current-board
-(defun make-node(points p-p1 p-p2 board f player)
-  (list points p-p1 p-p2 board f player)
+(defun make-node(points p-p1 p-p2 board f player depth)
+  (list points p-p1 p-p2 board f player depth)
 )
 
 
@@ -75,21 +75,55 @@
   (sixth node)
 )
 
+(defun node-depth(node)
+  (seventh node)
+)
+
+;;<play-node>= <state> f move(cell-points) player
+;;;<state>= current-board
+(defun make-play-node(board f move player)
+  (list board f move player)
+)
+
+(defun play-node-board(play-node)
+  (first play-node)
+)
+
+(defun play-node-f(play-node)
+  (second play-node)
+)
+
+(defun play-node-move(play-node)
+  (third play-node)
+)
+
+(defun play-node-player(play-node)
+  (fourth play-node)
+)
 
 ;;Node value heuristic
 (defun evaluate-node(points-p1 points-p2 player)
  "returns the value of the node between -1 and 1, knowing that the total points in the board are 4950"
-  (let (
-    
-    (point-variation (- points-p1 points-p2))   
+
+   (cond 
+      ((equal player -2) 
+          (cond
+            ((> (- points-p2 points-p1) 2475) 1)
+            ((< (- points-p2 points-p1) -2475) -1)
+            ((equal (- points-p2 points-p1) 0) 0)
+            (t   (round-to (float (/ (- points-p2 points-p1) 4950)) 5))
+          )          
+      )
+
+      (t 
+            (cond
+                ((> (- points-p1 points-p2) 2475) 1)
+                ((< (- points-p1 points-p2) -2475) -1)
+                ((equal (- points-p1 points-p2) 0) 0)
+                (t   (round-to (float (/ (- points-p1 points-p2) 4950)) 5))
+            )
+          ) 
     )
-    (cond ((equal player -2) (setf point-variation (- points-p2 points-p1))))
-    (cond
-      ((> point-variation 2475) 1)
-      ((< point-variation -2475) -1)
-      ((equal point-variation 0) 0)
-      (t   (round-to (float (/ point-variation 4950)) 5))
-    ))
 )
 
 (defun round-to (number precision &optional (what #'round))
@@ -139,6 +173,26 @@
       (lambda (value)
           (position-indexes-to-chess (position-node value board)))
     values)
+)
+
+(defun list-points (node-list)
+  (cond ((null node-list) nil) 
+     (t (cons (node-points (car node-list)) (list-points (cdr node-list))))
+  )
+)
+
+(defun remove-point-list-nil(point-list)
+  (apply #'append
+                   (mapcar 
+                    (lambda (n) 
+                      (cond
+                       ((or (not (typep n 'real))) nil)
+                       (t (list n))
+                       )
+                      )
+                    point-list )
+                   )
+            
 )
 
 (defun remove-simmetric-assimmetric (value board &optional (strategy 'max))
@@ -290,24 +344,24 @@
   )
 )"""
 
-(defun generate-moves (board player points-1 points-2)
+(defun generate-moves (node)
 (let* (
-      (line-column (position-node player board))
+      (line-column (position-node (node-player node) (node-board node)))
       (line-index (first line-column))
       (column-index (second line-column))
-      (board-no-player (replace-value line-index column-index board nil))
+      (board-no-player (replace-value line-index column-index (node-board node) nil))
       )
 
       (cond ((null board-no-player) '())
       (t (append
-        (move-avaliable (- line-index 2) (- column-index 1) board-no-player player points-1 points-2)
-        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
-        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player player points-1 points-2)
-        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player player points-1 points-2)
-        (move-avaliable (- line-index 1) (- column-index 2) board-no-player player points-1 points-2)
-        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
-        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player player points-1 points-2)
-        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player player points-1 points-2)
+        (move-avaliable (- line-index 2) (- column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node)) 
+        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 1) (- column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
         ))
       )
   )
@@ -315,7 +369,7 @@
 
 
 
-(defun move-avaliable (line-index column-index board player points-1 points-2)
+(defun move-avaliable (line-index column-index board player points-1 points-2 depth)
    (cond
    ((or (< line-index 0) (> line-index 9)) nil)
    ((or (< column-index 0) (> column-index 9)) nil)
@@ -328,7 +382,7 @@
 			(points (sum-move player value points-1 points-2))
 			)
    (list
-       (make-node value (first points) (second points) (replace-value line-index column-index board player) (evaluate-node (first points) (second points) player) player)
+       (make-node value (first points) (second points) (replace-value line-index column-index board player) (evaluate-node (first points) (second points) player) player (1+ depth))
      )
 		)
     )
@@ -371,5 +425,37 @@
 )
 
 (defun test-node ()
-  (car (generate-moves (bo-2) -2 12 47))
+"points p-p1 p-p2 board f player depth"
+  (make-node 2 10 15 (bo-2) 0.002 -1 0)
 )
+
+(defun test-node-2 ()
+"points p-p1 p-p2 board f player depth"
+  (make-node 2 10 15 (bo-2) 0.8 -1 0)
+)
+
+(defun test-node-3 ()
+"points p-p1 p-p2 board f player depth"
+  (make-node 2 10 15 (bo-2) 1 -1 0)
+)
+
+(defun sort-f-nodes (node-list)
+  (cond
+    ((null node-list) nil)
+    (t
+      (append
+        (sort-f-nodes (list> (car node-list) (cdr node-list)))
+        (cons (car node-list) nil) 
+        (sort-f-nodes (list<= (car node-list) (cdr node-list)))))))
+
+(defun list> (a b)
+  (cond
+    ((or (null a) (null b)) nil)
+    ((> (node-f a) (node-f (car b))) (list> a (cdr b)))
+    (t (cons (car b) (list> a (cdr b))))))
+
+(defun list<= (a b)
+  (cond
+    ((or (null a) (null b)) nil)
+    ((<= (node-f a) (node-f(car b))) (list<= a (cdr b)))
+    (t (cons (car b) (list<= a (cdr b))))))
