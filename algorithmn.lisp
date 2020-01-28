@@ -1,13 +1,20 @@
+;;statistics
 (defvar *alpha-cuts* 0)
 (defvar *beta-cuts* 0)
 (defvar *analyzed-nodes* 0)
+
+;;hashtable
+;;(make-hash-table &key test size rehash-size rehash-threshold)
+(defparameter *memoization-hash* (make-hash-table))
+(defparameter *memoization-points-hash* (make-hash-table))
+
 
 (let (
   (*player -1)
   (*board (bo))
   (*points-1 0)
   (*points-2 0)
-  (*best-play (make-play-node nil most-negative-fixnum nil -5))
+  (*best-play (make-play-node (bo) most-negative-fixnum most-negative-fixnum -5))
 )
   (defun jogar (board time depth)
 
@@ -17,6 +24,7 @@
     (let* (
       (play-start-time (get-internal-real-time));;start-time in miliseconds
       (move (negamax (make-node -5 *points-1 *points-2 board -5 *player 0) time depth most-negative-fixnum most-positive-fixnum 1 play-start-time))
+      (best-move (play-node-move *best-play))
       (indexes-move (position-node move board))
       (indexes-player (position-node *player board))
       (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
@@ -191,44 +199,107 @@
   )
 )
 
-(defun successors-loop (successors board player time depth α β cor play-start-time &optional (best-value most-negative-fixnum)) ;;para cada sucessor nk em sucessores
+(defun successors-loop (successors board player time depth α β cor play-start-time &optional (l-best-value most-negative-fixnum)) ;;para cada sucessor nk em sucessores
   (cond (
-        (null successors) best-value)
+        (null successors) l-best-value)
         (t
+
+        ;;verificar se hashtable contem o valor de um estado e devolver caso sim
+        ;;(cond ((not (null (gethash (list board player) *memoization-points-hash*))) (gethash (list board player) *memoization-points-hash*)))
+
           (let* (
-            (best-value (max best-value (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
+            (best-value (max l-best-value (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
             (α (max α best-value)) ;; α := max (α, bestValue))
           )
-        (setf *analyzed-nodes* (1+ *analyzed-nodes*))
-          (cond 
-            ((< α β) 
-              (cond ((> best-value (play-node-f *best-play))
-                  (setf *best-play (make-play-node board (node-f(car successors))
-                  (car (value-node (first (position-node player board)) (second (position-node player board)) (bo)))
-                  player))
+         
+         (cond 
+                  ((and (= depth 1) (< best-value l-best-value) (< α β))
+                    (setf *best-play (make-play-node board (node-f(car successors))
+                     (car (value-node (first (position-node player board)) (second (position-node player board)) (bo)))
+                      player))
+                      
               ))
+     
+        (setf *analyzed-nodes* (1+ *analyzed-nodes*))
+                
+          (cond 
+          ;;to change or use later
+            ((< α β) 
+                
+             ;; (cond ((> best-value (play-node-move *best-play))
+              ;;    (setf *best-play (make-play-node board (node-f(car successors))
+              ;    (car (value-node (first (position-node player board)) (second (position-node player board)) (bo)))
+              ;    player))
+             ;; ))
             )
           )
         
           (cond 
            ( (< α β)
-                   
-            (successors-loop (cdr successors) board player time depth α β cor play-start-time best-value))
+            (setf (gethash (list board player) *memoization-points-hash*) best-value)     
+              (successors-loop (cdr successors) board player time depth α β cor play-start-time best-value))
            (t 
                (cond ((= cor 1) (setf *alpha-cuts* (1+ *alpha-cuts*))))
                (cond ((= cor -1) (setf *beta-cuts* (1+ *beta-cuts*))))
-             best-value)
+             l-best-value)
           )
           )
         )
       )
 )
 
-(defun opposite (player)
-(cond
-      ((equal player -1) -2)
-      (t -1)
-    )
+(defun generate-moves (node)
+(let* (
+      (line-column (position-node (node-player node) (node-board node)))
+      (line-index (first line-column))
+      (column-index (second line-column))
+      (board-no-player (replace-value line-index column-index (node-board node) nil))
+      )
+
+      (cond ((null board-no-player) '())
+      (t (append
+        (move-avaliable (- line-index 2) (- column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 2) (+ column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 2) (- column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node)) 
+        (move-avaliable (+ line-index 2) (+ column-index 1) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 1) (- column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (- line-index 1) (+ column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 1) (- column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        (move-avaliable (+ line-index 1) (+ column-index 2) board-no-player (node-player node) (node-points-p1 node) (node-points-p2 node)  (node-depth node))
+        ))
+      )
+  )
+)
+
+
+
+(defun move-avaliable (line-index column-index board player points-1 points-2 depth)
+   (cond
+   ((or (< line-index 0) (> line-index 9)) nil)
+   ((or (< column-index 0) (> column-index 9)) nil)
+   ((value-node line-index column-index board)
+
+  ;;mudar para construtores
+
+	(let* (
+			(value (car (value-node line-index column-index board)))
+			(points (sum-move player value points-1 points-2))
+			)
+      (cond 
+      ((not (null (gethash (list board player) *memoization-hash*)))         
+        (list
+          (make-node value (first points) (second points) (replace-value line-index column-index board player) (gethash (list board player) *memoization-hash*) player (1+ depth))
+        )
+      )
+        (t 
+          (setf (gethash (list board player) *memoization-hash*) (evaluate-node (first points) (second points) player))
+
+          (list
+            (make-node value (first points) (second points) (replace-value line-index column-index board player) (evaluate-node (first points) (second points) player) player (1+ depth))
+          )
+        )
+      )))
+  )
 )
 
 )
