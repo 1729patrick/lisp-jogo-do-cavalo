@@ -11,7 +11,7 @@
 
 (let (
   (*player -1)
-  (*board (bo))
+  (*board (tabuleiro-aleatorio))
   (*points-1 0)
   (*points-2 0)
   (*best-play (make-play-node (bo) most-negative-fixnum most-negative-fixnum -5))
@@ -21,46 +21,39 @@
     (setf *beta-cuts* 0)
     (setf *alpha-cuts* 0)
     (setf *analyzed-nodes* 0)
+    (setf *best-play (make-play-node *board most-negative-fixnum most-negative-fixnum -5))
+
     (let* (
       (play-start-time (get-internal-real-time));;start-time in miliseconds
       (move (negamax (make-node -5 *points-1 *points-2 board -5 *player 0) time depth most-negative-fixnum most-positive-fixnum 1 play-start-time))
       (best-move (play-node-move *best-play))
       (indexes-move (position-node move board))
       (indexes-player (position-node *player board))
-      (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) board nil))
+      (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) (remove-simmetric-assimmetric move board) nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
 
-
-
-    (cond
-      ((and (null (first indexes-player)) (null (second indexes-player)))
-        (setf move (max-first-move-value *player *board))
-        (setf indexes-move (position-node move board))
-        (setf board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) *board *player))
+      (cond
+        ((and (null (first indexes-player)) (null (second indexes-player)))
+          (setf move (max-first-move-value *player *board))
+          (setf indexes-move (position-node move board))
+          (setf board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) *board *player))
+        )
       )
+
+      (cond
+        ((not (null board-with-updated-player-position))
+          (display-computer-move *player (position-indexes-to-chess indexes-move) board-with-updated-player-position)
+
+          (sum-points move)
+
+          (write-log board-with-updated-player-position *points-1 *points-2 (get-play-time-milisecs play-start-time) *alpha-cuts* *beta-cuts* *analyzed-nodes*)
+          board-with-updated-player-position
+        )
+        (t  
+          *board)
+        )
     )
-       (terpri)
-      (format t "THE BESTPLAY11: ~a" (play-node-move *best-play))
-      (terpri)
-    (cond
-      ((not (null board-with-updated-player-position))
-        (display-computer-move *player (position-indexes-to-chess indexes-move) board-with-updated-player-position)
-        (terpri)
-      (format t "THE BESTPLAY: ~a" (play-node-move *best-play))
-      (terpri)
-       (terpri)
-      (format t "THE MOVE: ~a" move)
-      (terpri)
-        (sum-points move)
-
-        (write-log board-with-updated-player-position *points-1 *points-2 (get-play-time-milisecs play-start-time) *alpha-cuts* *beta-cuts* *analyzed-nodes*)
-        board-with-updated-player-position
-      )
-      (t  
-         *board)
-      )
-      )
   )
 
 
@@ -70,7 +63,7 @@
       (move (car (value-node (first (position-chess-to-indexes position)) (second (position-chess-to-indexes position)) *board)))
       (indexes-move (position-node move *board))
       (indexes-player (position-node *player *board))
-      (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) *board nil))
+      (board-with-updated-last-move (replace-value (first indexes-player) (second indexes-player) (remove-simmetric-assimmetric move *board) nil))
       (board-with-updated-player-position (replace-value (first indexes-move) (second indexes-move) board-with-updated-last-move *player))
       )
 
@@ -123,11 +116,6 @@
               (moves-avaliable (values-to-chess moves *board))
             )
 
-        (terpri)
-        (format t "MOVESS: ~a" moves)
-        (terpri)
-        (format t "car board: ~a" (car *board))
-        (terpri)
             (cond
             ((null moves-avaliable) 
             ;;adicionar tempo da jogada do humano?????
@@ -157,7 +145,7 @@
 
    ;;resetar as váriaveis apos cada partida
   (defun reset-variables ()
-    (setf *board (bo))
+    (setf *board (tabuleiro-aleatorio))
     (setf *player -1)
     (setf *points-1 0)
     (setf *points-2 0)
@@ -182,8 +170,7 @@
 (defun negamax (node time-limit depth α β cor &optional (play-start-time (get-internal-real-time)))
     
   (cond
-      ;;((>= (- (get-internal-real-time) play-start-time) time-limit) nil)
-      ;;((= depth 0)  (* (node-points node) cor));;se d = 0 ou n é terminal ;;return c * valor heuristico de n
+      ;;se d = 0 ou n é terminal ou tempo terminou ;;return c * valor heuristico de n
       ((OR (= depth 0) 
         (>= (- (get-internal-real-time) play-start-time) time-limit)
           (null (generate-moves node))) 
@@ -192,7 +179,7 @@
       (t (let* (
           (successors (sort-f-nodes (generate-moves node)));;sucessores := OrderMoves(GenerateMoves(n))
         )
-
+      ;;loop de sucessores
       (successors-loop successors (node-board node) (node-player node) time-limit depth α β cor play-start-time)
     )
    )
@@ -205,7 +192,9 @@
         (t
 
         ;;verificar se hashtable contem o valor de um estado e devolver caso sim
-        ;;(cond ((not (null (gethash (list board player) *memoization-points-hash*))) (gethash (list board player) *memoization-points-hash*)))
+        (setf *analyzed-nodes* (1+ *analyzed-nodes*))
+        (cond ((not (null (gethash (list board player) *memoization-points-hash*))) 
+          (gethash (list board player) *memoization-points-hash*)))
 
           (let* (
             (best-value (max l-best-value (- (negamax (car successors) time (- depth 1) (- β) (- α) (- cor) play-start-time)))) ;; bestValue := max (bestValue, −negamax (nk, d−1, −β, − α, −c))
@@ -213,26 +202,12 @@
           )
          
          (cond 
-                  ((and (= depth 1) (< best-value l-best-value) (< α β))
+                  ((and (= depth 1) (> best-value l-best-value) (< α β))
                     (setf *best-play (make-play-node board (node-f(car successors))
-                     (car (value-node (first (position-node player board)) (second (position-node player board)) (bo)))
+                     (car (value-node (first (position-node player board)) (second (position-node player board)) board))
                       player))
                       
               ))
-     
-        (setf *analyzed-nodes* (1+ *analyzed-nodes*))
-                
-          (cond 
-          ;;to change or use later
-            ((< α β) 
-                
-             ;; (cond ((> best-value (play-node-move *best-play))
-              ;;    (setf *best-play (make-play-node board (node-f(car successors))
-              ;    (car (value-node (first (position-node player board)) (second (position-node player board)) (bo)))
-              ;    player))
-             ;; ))
-            )
-          )
         
           (cond 
            ( (< α β)

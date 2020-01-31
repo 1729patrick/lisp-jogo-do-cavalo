@@ -1,4 +1,4 @@
- # Inteligência Artificial - Jogo do Cavalo
+ # Inteligência Artificial - Jogo do Cavalo, 2 Jogadores
 
 ## Manual do Utilizador
 ---
@@ -8,277 +8,220 @@
 
 ## Docentes:
 * Prof. Joaquim Filipe
-* Eng. Filipe Mariano
+* Prof. Filipe Mariano
 
-# Índice
-1. [Introdução](#Introdução)
-   <br>
-   1.1 [Objetivos](#Objetivos)
-     <br>
-   1.2 [Descrição Geral do Funcionamento](#Descrição)
-2. [Utilização do Programa](#Utilização)
-     <br>
-   2.1 [Utilização do Programa](#Utilização)
-      <br>
-   2.2 [Pré-requisitos](#Pré-requisitos)
-     <br>
-   2.3 [Carregamento de Ficheiros do Programa](#Ficheiros)
-     <br>
-   2.4 [Inicar o Jogo](#Inicar)
-     <br>
-   2.5 [Estatísticas](#Estatísticas)
-3. [Limitações](#Limitações)
+### 2019/2020
 
 
-# Introdução <a name="Introdução"></a>
-Este documento tem como o obetivo de identificar os vários objetivos do programa do jogo do cavalo, descrever geralmente o funcionamento do mesmo, explicar a forma como se utiliza o programa, dar a conhecer a informação necessário para o este funcionar de forma correta, assim como a informação que este desponibliza, acompanhado de exemplos dos ecrãs com que o utilizador pode vir a deparar-se.
+# Introdução 
+Este documento tem como o objetivo documentar tecnicamente a implementação em Common Lisp do jogo do cavalo, uma variante do problema do cavalo, cuja finalidade é simular um jogo de duas pessoas baseado em turnos, tal como o xadrez, de modo a determinar um venceder. O tabuleiro do jogo em questão tem 10 linhas e 10 colunas, pontuadas de 0 a 99. O vencedor do jogo é aquele que consegue obter mais pontos, até os dois não conseguirem realizar mais movimentos. O jogo pode tem vertente de o utilizador humano contra o computador, e do computador contra computador. As jogadas do computador são decididas com recurso ao algoritmo implementado, o Negamax.
+
+A primeira parte do documento dá a conhecer os objetivos e descrição do programa. A seguir é apresentada a estrutra de ficheiros necessária para o programa funcionar. Posteriormente, é demonstrada a utilização do programa assim como o decorrer de jogo, acompanhado por exemplos visuais.
 
 Para finalizar, são apresentadas as limitações do programa.
 
 ## Objetivos: <a name="Objetivos"></a>
-* Simular o jogo do cavalo de modo a mostrar sequências de jogadas que permitem terminar o jogo tendo em conta o tabuleiro utilizado, a utilização de um algoritmo, e algumas regras.  Os algoritmos dispoíveis são o Depth-First Search, Breadth-First Search e A*.
+* Simular o jogo do cavalo, entre 2 jogadores, de modo a mostrar sequências de jogadas que permitem terminar o jogo tendo em conta o tabuleiro utilizado, a utilização do algoritmo NEGAMAX.
   <br>
-* Percorrer um tabuleiro pontuado com uma peça que realiza os mesmos movimentos que um cavalo no xadrez de modo a chegar a uma pontuação desejada.
+* Percorrer um tabuleiro pontuado com uma peça que realiza os mesmos movimentos que um cavalo no xadrez de modo a obter mais pontos que o adversário.
   <br>
-* Atingir uma dada pontuação definida para o problema, no menor número possível de jogadas, de pendendo do algoritmo escolhido, deslocando o cavalo ao longo do tabuleiro, partindo de uma casa inicial, em jogadas sucessivas até não ser possível efetuar qualquer movimento ou até atingir o objetivo. No caso de o cavalo não puder efetuar mais movimentos, significa que não há solução para o problema em questão.
+* Após o utilizador definir o modo de jogo, entre Humano vs Computador e Computador vs Computador, uma profundidade máxima do NEGAMAX e um tempo limite de jogada, o jogo inicia.
 
 
 ## Descrição Geral do Funcionamento<a name="Descrição"></a> 
 As regras a serem aplicadas para atingir o objetivo do tabuleiro a ser resolvido são:
-* Existe apenas um jogador.
-* O jogador começa por colocar o cavalo numa casa da primeira linha do tabuleiro.
-* O estado final é atingido quando o cavalo chega a uma casa que lhe permite obter uma pontuação igual ou superior ao objetivo definido.
-* Se não for possível atingir o objetivo, o programa deverá informar o utilizador de que o problema não tem solução.
+* Existem dois jogadores, 1 Humano e 1 Computador, ou ambos são o Computador.
+* O jogador humano começa por colocar o cavalo numa casa da primeira linha do tabuleiro.
+* O jogador Computador começa por colocar o cavalo numa casa da última linha do tabuleiro.
+* A pontuação das casas do tabuleiro é atribuída aleatoriamente.
 
-O programa começa pela escolha entre dois modos: Exercícios ou Problemas. Exercícios são os tabuleiros fornecidos no enunciado do projeto do jogo do cavalo, equanto os problemas são os tabuleiros inseridos num ficheiro problems.dat, na pasta do programa.
+O programa começa pela escolha entre dois modos: Humano vs Computador e Computador vs Computador. Humano vs Computador é o mod de jogo onde o utilizador joga, por turnos, contra o computador, sendo possível visualizar as jogadas possíveis do jogador humano a cada turno. As jogadas do computador são decididas pelo algoritmo NEGEMAX.
 
-A imagem abaixo é um exemplo dos tabuleiros fornecidos pelo docente:
-
-![alt text](https://github.com/patrickbattisti/lisp-passeio-do-cavalo/blob/dev/mdImages/problema2.PNG?raw=true)
-
-
-O jogo começa com a colocação do cavalo numa casa da 1ª linha (A1-J1 do tabuleiro). Se a casa escolhida tiver um número com dois dígitos diferentes, por exemplo 57, então, em consequência, o número simétrico 75 é apagado do tabuleiro, tornando esta casa inacessível durante o resto do jogo. Ou seja, o cavalo não pode terminar outra jogada nessa casa. Se o cavalo for colocado numa casa com um número "duplo", por exemplo 66, então qualquer outro número duplo pode ser removido e o jogador deve escolher qual em função da sua estratégia (por default remover a de maior valor). Depois de um jogador deixar a casa para se movimentar para outra, a casa onde estava fica também inacessível para o jogo, ficando o numero da casa apagado.
+O jogo começa com a colocação de cada cavalo numa casa da 1ª e última linha (A1-J1 e A10-J10 do tabuleiro). Se a casa escolhida tiver um número com dois dígitos diferentes, por exemplo 57, então, em consequência, o número simétrico 75 é apagado do tabuleiro, tornando esta casa inacessível durante o resto do jogo. Ou seja, o cavalo não pode terminar outra jogada nessa casa. Se o cavalo for colocado numa casa com um número "duplo", por exemplo 66, então qualquer outro número duplo pode ser removido e o jogador deve escolher qual em função da sua estratégia (por default remover a de maior valor). Depois de um jogador deixar a casa para se movimentar para outra, a casa onde estava fica inacessível para as restantes jogadas posteriores, ficando o numero da casa substituído pelo valor NIL.
 
 As regras aplicadas ao resentolar do jogo são:
 * Um cavalo não pode saltar para uma casa vazia (sem número).
   <br>
-*  A cada jogada repete-se a regra do simétrico ou duplo. 
+*  Cada jogador ganha pontos por cada casa visitada pelo cavalo (igual ao valor da casa). 
+   <br>
+*   A cada jogada repete-se a regra do simétrico ou duplo. 
     <br>
 *  O jogador ganha pontos por cada casa visitada pelo cavalo (igual ao valor da casa). 
     <br>
 *  Os pontos são contabilizados apenas para as casas visitadas, não pelos números simétricos ou duplos removidos.
     <br>
-*  O jogo termina quando não for possível movimentar o cavalo no tabuleiro, ou se uma solução para os pontos desejados for encontrada.
+*  O jogo termina quando não for possível movimentar nenhum dos cavalos no tabuleiro.
     <br>
-*  Caso exista, a solução é apresentada  pela sequência de jogadas realizadas sobre as casas do tabuleiro. Cada jogada é identificada pela casa destino do cavalo (uma letra e um número).
+*  O vencedor o jogador que obteve o maior número de pontos.
 
 
-# Utilização do Programa<a name="Utilização"></a> 
+# Utilização do Programa
 
-## Pré-requisitos<a name="Pré-requisitos"></a> 
-Para além dos ficheiros do programa "project.lisp", "puzzle.lisp" e "search.lisp" :
-* Deve haver um ficheiro statistics.dat na pasta do programa.
-* Deve haver um ficheiro problems.dat com pelo menos um tabuleiro no formato de lista na linguagem Common Lisp.
+## Pré-requisitos
+Para além dos ficheiros do programa "algorithmn.lisp", "game.lisp" e "interact.lisp", deve haver um ficheiro log.dat na pasta do programa.
 
-A conteúdo da pasta do progrmaa deve ter o seguinte aspeto:
-
-![alt text](https://github.com/patrickbattisti/lisp-passeio-do-cavalo/blob/dev/mdImages/pasta-programa.PNG?raw=true)
-
-O Ficheiro "problems.dat" deverá ter o seguinte tipo de conteúdo:
-```dat
-((NIL NIL NIL NIL NIL NIL NIL NIL NIL 12)
-(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
-(NIL NIL 55 NIL NIL NIL NIL NIL NIL NIL)
-(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
-(NIL NIL NIL 22 NIL 45 NIL NIL NIL NIL)
-(NIL NIL NIL NIL NIL NIL NIL NIL 88 NIL)
-(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
-(NIL NIL NIL 67 NIL NIL NIL NIL NIL NIL)
-(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
-(NIL NIL NIL 44 NIL NIL NIL NIL NIL NIL))
+## Carregamento de Ficheiros do Programa
+Para o utilizador carregar os ficheiros necessários, necessita de compilar apenas o ficheiro "interact.lisp" no IDE LispWorks, pois este irá carregar os restantes ficheiros.  
 
 
-((94 25 54 89 21 8 36 14 41 96) 
-(78 47 56 23 5 49 13 12 26 60) 
-(0 27 17 83 34 93 74 52 45 80) 
-(69 9 77 95 55 39 91 73 57 30) 
-(24 15 22 86 1 11 68 79 76 72) 
-(81 48 32 2 64 16 50 37 29 71) 
-(99 51 6 18 53 28 7 63 10 88) 
-(59 42 46 85 90 75 87 43 20 31) 
-(3 61 58 44 65 82 19 4 35 62) 
-(33 70 84 40 66 38 92 67 98 97))
-```
-## Carregamento de Ficheiros do Programa<a name="Ficheiros"></a> 
-Para o utilizador carregar os ficheiros necessários, necessita de compilar apenas o ficheiro "project.lisp" no IDE LispWorks, pois este irá carregar os restantes.  
-
-
-## Inicar o Jogo<a name="Iniciar"></a> 
-Depois de carregar os ficheiros necessários para o funcionamento do programa, o utilizador deve executar a função "start-game". Após esta execução, será apresentado um menu de escolha de modos.
+## Inicar o Jogo
+Depois de carregar compilar o ficheiro "interact.lisp, o utilizador deve executar a função "start". Após esta execução, será apresentado um menu de escolha de modos.
 ```lisp
-
-CL-USER 1 > (start-game)
-    
----------------------HORSE GAME---------------------------
+---------------------CHOOSE A MODE----------------------------
    
-|                Choose a Mode:          		  |
-   
-|                1 - Exercises                            |   
-|                2 - Problems                             |   
-|                3 - LEAVE                                |
+                 1 - Human vs Computer                           
+                 2 - Computer vs Computer                  
    
  --------------------------------------------------------
 ```
 <br>
-Caso o utilizador selecione "1" ou "2", isto é, "Exercises" ou "Problems", irá depar-se com um menu de escolha de algoritmo a ser utilizado.
+Caso o utilizador selecione "1" ou "2", isto é, "Human vs Computer" ou "Computer vs Computer ", irá deparar-se com o pedido de inserção da profundidade máxima.
+
+<br>
 <br>
 
 ```lisp 
+> 2
+   
+------ENTER THE MAXIMUM DEPTH------
+1
+```
+<br>
 
----------------------HORSE GAME---------------------------
-   
-|                Choose an algorithm:          	          |
-   
-|                1 - Depth-First                          |   
-|                2 - Breadth-First                        |   
-|                3 - A*                                   |
-   
- ---------------------------------------------------------
+Após a profundidade ser inserida, será solicitado um tempo limite para as jogadas do computador, em milisegundos, sendo pedido um valor entre 1000 e 5000.
+
+<br>
+
+```lisp  
+------ENTER TIME FOR COMPUTER PLAY (1000 >= TIME [ms] >= 5000)------
+2000
 ```
 
-Após escolher um dos algoritmos apresentados, se escolheu a opção "Exercices", o utilizador irá deparar-se com um menu de escolha de um dos 7 tabuleiros fornecidos pelo docente, de A e F.
+<br>
+Caso o Utilizador tenha escolhido o modo Human vs Computer, após a definição do tempo de jogada limite, é apresentado o menu de escolha do primeiro jogador a jogar, entre humano e computador.
 
-```lisp
+<br>
+<br>
 
----------------------HORSE GAME---------------------------
-  
--|||||||||||||||||||||EXERCISES|||||||||||||||||||||||||||
-  
-|                    Choose a Board:          		    |
-  
-|              	  	 1 - Board A                        |  
-|                 	 2 - Board B                        |  
-|               	 3 - Board C                        |  
-|              	  	 4 - Board D                        |  
-|              		 5 - Board E                        |  
-|              	         6 - Board F                        |  
-|              	         OTHER - Leave                      |
+```lisp  
+---------------------CHOOSE THE FIRST PLAYER----------------------------
+   
+                 1 - Human                                    
+                 2 - Computer                              
    
  --------------------------------------------------------
 ```
-Caso o utilizador tenha selecionado a opção "Problems, irá deparar-se com um menu de escolha de um dos tabuleiros presentes no ficheiro "problems.dat". os Tabuleiros são listados dinamicamente pela sua posição no ficheiro. Quantos mais problemas houverem, mais opções irão aparecer.
+Após escolher o primeiro jogador a jogar, é apresentado o tabuleiro inicial, que é aleatório, com valores de 0 a 100.
 
-```lisp 
- ---------------------------------------
-|               HORSE GAME             |
-
-|            Choose a Problem          |
-
-|         1 - Board number: 1          |
-|         2 - Board number: 2          |
-|         3 - Board number: 3          |
-|         4 - Board number: 4          |
- ---------------------------------------
-```
-
-Depois do utilizador ter escolhido um tabuleiro, o programa irá perguntar qual a posição inicial do cavalo, por linha e coluna, qual a estratégia de remoção de número "duplo", e qual o número de pontos desejados.
+<br>
 
 ```lisp
-What is the initial line number? 
-0
-What is the initial column number? 
-3
-What is strategy for remove asymmetric numbers? 
-1. MAX ASIMMETRIC
-2. MIN ASIMMETRIC
-2
-What is the target point number? 
-240
-```
+----------------------START BOARD-----------------
 
-Caso o utilizador tenha selecionado o algoritmo Depth-First, o programa irá perguntar qual a profundidade máxima a percorrer.
+(51 61 26 89 79 54 36 87 74 5)
+(18 46 57 19 42 94 66 86 59 65)
+(78 63 70 97 55 95 90 73 64 10)
+(0 33 81 15 37 56 27 69 39 8)
+(91 6 40 41 52 71 7 45 28 58)
+(99 82 43 29 32 93 49 35 21 11)
+(9 53 67 68 84 60 88 2 96 76)
+(16 38 23 13 75 20 34 47 50 92)
+(12 62 72 3 48 24 4 1 77 25)
+(30 14 80 31 83 44 98 17 22 85)
+
+----------------------START BOARD-----------------
+```
+<br>
+De seguida, as jogadas do humano são pedidas, mostrando no ecrã as jogadas possíveis que o jogador pode realizar. As jogadas têm de ser inseridas no ecrã da mesma forma que é descrito no ecrã, com uma letra seguida de um número. Caso o utilizadore não insira um valor válido, o programa volta a pedir a jogada ao utilizador. Após a inserção de uma jogada válida, o tabuleiro atualizado com a jogada escolhida é mostrado no ecrã. As jogadas do computador são apresentadas da mesma forma, com a indicação da posição que o computador escolheu jogar. Abaixo é possível visualizar exemplos de esta interação.
+
+<br>
+<br>
 
 ```lisp
-What is the limit depth? 
-6
+Enter your move (A1 A2 A3 A4 A5 A6 A7 A8 A9 A10): A5
+
+(51 61 26 89 -1 54 36 87 74 5)
+(18 46 57 19 42 94 66 86 59 65)
+(78 63 70 97 55 95 90 73 64 10)
+(0 33 81 15 37 56 27 69 39 8)
+(91 6 40 41 52 71 7 45 28 58)
+(99 82 43 29 32 93 49 35 21 11)
+(9 53 67 68 84 60 88 2 96 76)
+(16 38 23 13 75 20 34 47 50 92)
+(12 62 72 3 48 24 4 1 77 25)
+(30 14 80 31 83 44 98 17 22 85)
+
+Computer -2 move: F1
+
+(51 61 26 89 -1 54 36 87 74 5)
+(18 46 57 19 42 94 66 86 59 65)
+(78 63 70 97 55 95 90 73 64 10)
+(0 33 81 15 37 56 27 69 39 8)
+(91 6 40 41 52 71 7 45 28 58)
+(-2 82 43 29 32 93 49 35 21 11)
+(9 53 67 68 84 60 88 2 96 76)
+(16 38 23 13 75 20 34 47 50 92)
+(12 62 72 3 48 24 4 1 77 25)
+(30 14 80 31 83 44 98 17 22 85)
+
+
+
+Enter your move (C4 C6 B3 B7): B7
+
+(51 61 26 89 NIL 54 36 87 74 5)
+(18 46 57 19 42 94 -1 86 59 65)
+(78 63 70 97 55 95 90 73 64 10)
+(0 33 81 15 37 56 27 69 39 8)
+(91 6 40 41 52 71 7 45 28 58)
+(-2 82 43 29 32 93 49 35 21 11)
+(9 53 67 68 84 60 88 2 96 76)
+(16 38 23 13 75 20 34 47 50 92)
+(12 62 72 3 48 24 4 1 77 25)
+(30 14 80 31 83 44 98 17 22 85)
 ```
-Após estas informaçãoes serem inseridas, o programa irá processor o tabuleiro com o algoritmo e informações inseridas pelo utilizador. Caso o programa tenha encontrado uma solução, irá apresentar a mesma no ecrã, assim como o número de pontos atingidos, a profundidade do nó em que se encontrou a solução e a sequência de jogadas necessárias para chegar ao objetivo.
+<br>
+Caso o utilizador tenha escolhido o modo Computador vs Computador, as jogadas são mostradas à medida que são calculadas e executadas pelo programa, mostrando no ecrã o número correspondente ao jogador (-1 ou -2), a posição para onde jogou e o tabuleiro atualizado com a jogada.
+<br><br>
 
 ```lisp
-*********************** SOLUTION DFS *******
-POINTS: 245
+Computer -1 move: J2
 
-DEPTH: 5
+(-2 28 42 NIL 18 29 21 NIL NIL NIL)
+(10 NIL NIL 17 65 NIL NIL NIL NIL 19)
+(36 56 53 NIL 25 48 NIL NIL NIL NIL)
+(35 NIL NIL 14 NIL NIL 13 7 33 NIL)
+(75 26 11 62 NIL 38 NIL NIL 2 20)
+(47 NIL 79 NIL 59 16 NIL 30 4 NIL)
+(39 41 54 NIL 23 NIL NIL NIL NIL 89)
+(5 1 NIL 0 22 NIL NIL 27 3 50)
+(52 12 NIL 40 NIL NIL 8 57 15 82)
+(31 -1 49 45 NIL 63 NIL NIL 55 32)
 
-SEQUENCE: 
-("D" 1)
-("C" 3)
-("B" 1)
-("A" 3)
-("B" 5)
-("A" 7)
 
 
-BOARD:
-(94 NIL 54 NIL 21 8 36 14 41 96)
-(78 47 56 23 5 49 13 12 26 60)
-(NIL 27 NIL 83 34 93 74 NIL 45 80)
-(69 9 77 95 55 39 91 73 57 30)
-(24 NIL 22 86 1 NIL 68 79 76 72)
-(81 48 32 2 64 16 50 37 29 NIL)
-(T NIL 6 18 53 28 7 63 10 88)
-(59 42 46 85 90 75 87 43 20 31)
-(3 61 58 44 65 82 19 4 35 62)
-(33 70 84 40 66 38 92 67 NIL 97)
-******************************************
+Computer -2 move: C2
+
+(NIL 28 42 NIL 18 29 21 NIL NIL NIL)
+(10 NIL NIL 17 65 NIL NIL NIL NIL 19)
+(36 -2 53 NIL 25 48 NIL NIL NIL NIL)
+(35 NIL NIL 14 NIL NIL 13 7 33 NIL)
+(75 26 11 62 NIL 38 NIL NIL 2 20)
+(47 NIL 79 NIL 59 16 NIL 30 4 NIL)
+(39 41 54 NIL 23 NIL NIL NIL NIL 89)
+(5 1 NIL 0 22 NIL NIL 27 3 50)
+(52 12 NIL 40 NIL NIL 8 57 15 82)
+(31 -1 49 45 NIL 63 NIL NIL 55 32)
 ```
 
-Caso o tabuleiro em questão não tenha solução para a informação inserida pelo utilizador, será apresentada a mensagem que o informa do mesmo.
+<br>
+O programa vai mostrando no ecrã todas as jogadas, até nenhum jogador puder efetuar jogadas. Quando não é possível efetuar mais jogadas, os pontos de ambos os jogadores, Humano ou Computador, são mostrados no ecrã.
+<br><br>
+
 ```lisp
-What is the target point number? 
-75
-No solution found
+Total points player -1: 2132
+Total points player -2: 2035
 ```
 
-## Estatísticas<a name="Estatísticas"></a>
-Após a execução bem sucedida de um algoritmo, o programa irá escrever no ficheiro "statistics.dat" a análise estatística da execução do algoritmo para resolver o tabuleiro escolhido. As informações oferecidas passam por ser algoritmo utilizado, tempo de execução, número de nós gerados, números de nós expandidos, valor de penetrância, factor de ramificação média, profundidade máxima (no caso de Depth-First), tamanho da solução, pontos desejados, pontos alcançados, sequência de jogadas, e os tabuleiros inicial e final. Abaixo encontra-se um exemplo deste output.
-```dat
- ----: Algorithm: DFS 
- ----:  Starting time: 17:55:31
- ----:  Ending Time: 17:55:46
- ----:  Number of Generated Nodes: 32
- ----:  Number of Expanded Nodes: 16
- ----:  Penetrance Level: 0.1875
- ----:  Median Branching Factor: 1.4831691
- ----:  Maximum Depth: 6
- ----:  Solution Length: 6
- ----:  Goal Points: 240
- ----:  Current Points: 245
- ----:  Solution Sequence: ((D 1) (C 3) (B 1) (A 3) (B 5) (A 7))
- ----:  Starting Board:
-   (94 25 54 89 21 8 36 14 41 96)
-   (78 47 56 23 5 49 13 12 26 60)
-   (0 27 17 83 34 93 74 52 45 80)
-   (69 9 77 95 55 39 91 73 57 30)
-   (24 15 22 86 1 11 68 79 76 72)
-   (81 48 32 2 64 16 50 37 29 71)
-   (99 51 6 18 53 28 7 63 10 88)
-   (59 42 46 85 90 75 87 43 20 31)
-   (3 61 58 44 65 82 19 4 35 62)
-   (33 70 84 40 66 38 92 67 98 97)
- ----:  Final Board:
-   (94 NIL 54 NIL 21 8 36 14 41 96)
-   (78 47 56 23 5 49 13 12 26 60)
-   (NIL 27 NIL 83 34 93 74 NIL 45 80)
-   (69 9 77 95 55 39 91 73 57 30)
-   (24 NIL 22 86 1 NIL 68 79 76 72)
-   (81 48 32 2 64 16 50 37 29 NIL)
-   (T NIL 6 18 53 28 7 63 10 88)
-   (59 42 46 85 90 75 87 43 20 31)
-   (3 61 58 44 65 82 19 4 35 62)
-   (33 70 84 40 66 38 92 67 NIL 97)
-```
+# Limitações
 
-# Limitações<a name="Limitações"></a>
-
-Em termos de limitações, o programa não consegue voltar a atrás nas ações do utilizador, nem começar o programa de novo sem chamar a função "start-game" de novo. Os inputs do utilizador não têm validações para todo o tipo de erros.
+Em termos de limitações, o programa não consegue validar os inputs do utilizador, pois não têm validações para todo o tipo de erros, excepto para a jogada escolhida pelo jogador Humano.

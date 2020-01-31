@@ -44,6 +44,45 @@
   (90 91 92 93 94 95 96 97 98 NIL)
 )
 )
+
+
+(defun lista-numeros (&optional (n 100))
+  (if (< n 1) '() (cons (1- n) (lista-numeros(1- n))))
+)
+;;teste: (lista-numeros)
+;; resultado: (99 98 97 96 95 94 93 92 91 90 89 88 87 86 85 ... 5 4 3 2 1 0)
+
+;;;função que baralha uma lista de numeros utilizando rotação entre o primeiro elemento da lista e outro aleatorio
+(defun baralhar (input-list &optional accumulator)
+  "Shuffle a list using tail call recursion."
+  (if (eq input-list nil)
+      accumulator
+      (progn
+	(rotatef (car input-list) (nth (random (length input-list)) input-list))
+	(baralhar (cdr input-list) 
+				 (append accumulator (list (car input-list))))
+				 )))
+;;teste: (baralhar (lista-numeros))
+;;resultado: outputs muito variados
+	
+;;;função que gera um tabuleiro aleatorio	
+(defun tabuleiro-aleatorio (&optional (lista (baralhar (lista-numeros))) (n 10))
+	(cond
+		((null lista) nil)
+		(t (cons (subseq lista 0 n) (tabuleiro-aleatorio (subseq lista n) n)))
+	)
+)
+;;teste: (tabuleiro-aleatorio)	 
+;;resultado: outputs muito variados->   ((3 9 82 94 14 54 86 39 71 97) 
+										;;(61 90 42 84 93 62 51 96 45 38) 
+										;;(19 76 0 17 37 1 60 40 31 30) 
+										;;(67 99 27 55 32 95 57 28 24 6) 
+										;;(72 33 79 81 49 73 36 69 16 43) 
+										;;(89 66 56 65 48 4 75 47 91 87) 
+										;;(68 64 22 53 70 41 50 15 5 52) 
+										;;(29 77 35 26 13 34 74 2 44 21) 
+										;;(59 7 18 78 88 8 85 83 25 11) 
+										;;(58 20 10 63 92 80 23 12 46 98))
 ;;<node>= current-points, points-of-player1, points-of-player2, <state> f player
 ;;;<state>= current-board
 (defun make-node(points p-p1 p-p2 board f player depth)
